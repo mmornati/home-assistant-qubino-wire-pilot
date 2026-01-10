@@ -124,16 +124,12 @@ jobs:
   # This job runs when a release is published to create and upload the zip
   # OR when manually triggered with build_zip_only option
   build_and_upload_zip:
-    if: |
-      (github.event_name == 'release' && github.event.release.draft == false) ||
-      (github.event_name == 'workflow_dispatch')
     needs: [prepare_release]
-    # Skip waiting for prepare_release if build_zip_only or release event
     if: |
       always() && (
         (github.event_name == 'workflow_dispatch' && inputs.build_zip_only) ||
         (github.event_name == 'workflow_dispatch' && needs.prepare_release.result == 'success') ||
-        (github.event_name == 'release')
+        (github.event_name == 'release' && github.event.release.draft == false)
       )
     runs-on: ubuntu-latest
     steps:
