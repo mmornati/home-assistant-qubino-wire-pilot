@@ -57,27 +57,79 @@ CONF_HEATER = "heater"
 CONF_SENSOR = "sensor"
 CONF_ADDITIONAL_MODES = "additional_modes"
 
+# Configuration keys for custom percentage thresholds
+CONF_VALUE_OFF = "value_off"
+CONF_VALUE_FROST = "value_frost"
+CONF_VALUE_ECO = "value_eco"
+CONF_VALUE_COMFORT_2 = "value_comfort_2"
+CONF_VALUE_COMFORT_1 = "value_comfort_1"
+CONF_VALUE_COMFORT = "value_comfort"
+
 PRESET_COMFORT_1 = "comfort-1"
 PRESET_COMFORT_2 = "comfort-2"
 
-VALUE_OFF = 10
-VALUE_FROST = 20
-VALUE_ECO = 30
-VALUE_COMFORT_2 = 40
-VALUE_COMFORT_1 = 50
-VALUE_COMFORT = 99
+# Default percentage thresholds (can be overridden in config)
+DEFAULT_VALUE_OFF = 10
+DEFAULT_VALUE_FROST = 20
+DEFAULT_VALUE_ECO = 25  # Changed from 30 - some devices activate ECO at 25%
+DEFAULT_VALUE_COMFORT_2 = 40
+DEFAULT_VALUE_COMFORT_1 = 50
+DEFAULT_VALUE_COMFORT = 99
 
+
+def _validate_percentage_order(config: dict) -> dict:
+    """Validate that percentage thresholds are in ascending order."""
+    values = [
+        (CONF_VALUE_OFF, config.get(CONF_VALUE_OFF, DEFAULT_VALUE_OFF)),
+        (CONF_VALUE_FROST, config.get(CONF_VALUE_FROST, DEFAULT_VALUE_FROST)),
+        (CONF_VALUE_ECO, config.get(CONF_VALUE_ECO, DEFAULT_VALUE_ECO)),
+        (CONF_VALUE_COMFORT_2, config.get(CONF_VALUE_COMFORT_2, DEFAULT_VALUE_COMFORT_2)),
+        (CONF_VALUE_COMFORT_1, config.get(CONF_VALUE_COMFORT_1, DEFAULT_VALUE_COMFORT_1)),
+        (CONF_VALUE_COMFORT, config.get(CONF_VALUE_COMFORT, DEFAULT_VALUE_COMFORT)),
+    ]
+    for i in range(len(values) - 1):
+        if values[i][1] >= values[i + 1][1]:
+            raise vol.Invalid(
+                f"{values[i][0]} ({values[i][1]}) must be less than "
+                f"{values[i + 1][0]} ({values[i + 1][1]})"
+            )
+    return config
+
+
+# Base schema dict - used for extending CLIMATE_PLATFORM_SCHEMA
+_PLATFORM_SCHEMA_DICT = {
+    vol.Required(CONF_HEATER): cv.entity_id,
+    vol.Optional(CONF_SENSOR): cv.entity_id,
+    vol.Optional(CONF_ADDITIONAL_MODES, default=False): cv.boolean,
+    vol.Optional(CONF_NAME): cv.string,
+    vol.Optional(CONF_UNIQUE_ID): cv.string,
+    # Custom percentage thresholds (0-100)
+    vol.Optional(CONF_VALUE_OFF): vol.All(
+        vol.Coerce(int), vol.Range(min=0, max=100)
+    ),
+    vol.Optional(CONF_VALUE_FROST): vol.All(
+        vol.Coerce(int), vol.Range(min=0, max=100)
+    ),
+    vol.Optional(CONF_VALUE_ECO): vol.All(
+        vol.Coerce(int), vol.Range(min=0, max=100)
+    ),
+    vol.Optional(CONF_VALUE_COMFORT_2): vol.All(
+        vol.Coerce(int), vol.Range(min=0, max=100)
+    ),
+    vol.Optional(CONF_VALUE_COMFORT_1): vol.All(
+        vol.Coerce(int), vol.Range(min=0, max=100)
+    ),
+    vol.Optional(CONF_VALUE_COMFORT): vol.All(
+        vol.Coerce(int), vol.Range(min=0, max=100)
+    ),
+}
+
+# Schema with validation - used for config entry processing
 PLATFORM_SCHEMA_COMMON = vol.Schema(
-    {
-        vol.Required(CONF_HEATER): cv.entity_id,
-        vol.Optional(CONF_SENSOR): cv.entity_id,
-        vol.Optional(CONF_ADDITIONAL_MODES, default=False): cv.boolean,
-        vol.Optional(CONF_NAME): cv.string,
-        vol.Optional(CONF_UNIQUE_ID): cv.string,
-    }
+    vol.All(_PLATFORM_SCHEMA_DICT, _validate_percentage_order)
 )
 
-PLATFORM_SCHEMA = CLIMATE_PLATFORM_SCHEMA.extend(PLATFORM_SCHEMA_COMMON.schema)
+PLATFORM_SCHEMA = CLIMATE_PLATFORM_SCHEMA.extend(_PLATFORM_SCHEMA_DICT)
 
 
 async def async_setup_entry(
@@ -120,6 +172,14 @@ async def _async_setup_config(
     sensor_entity_id: str | None = config.get(CONF_SENSOR)
     additional_modes: bool = config.get(CONF_ADDITIONAL_MODES)
 
+    # Get custom percentage thresholds or use defaults
+    value_off: int = config.get(CONF_VALUE_OFF, DEFAULT_VALUE_OFF)
+    value_frost: int = config.get(CONF_VALUE_FROST, DEFAULT_VALUE_FROST)
+    value_eco: int = config.get(CONF_VALUE_ECO, DEFAULT_VALUE_ECO)
+    value_comfort_2: int = config.get(CONF_VALUE_COMFORT_2, DEFAULT_VALUE_COMFORT_2)
+    value_comfort_1: int = config.get(CONF_VALUE_COMFORT_1, DEFAULT_VALUE_COMFORT_1)
+    value_comfort: int = config.get(CONF_VALUE_COMFORT, DEFAULT_VALUE_COMFORT)
+
     async_add_entities(
         [
             QubinoWirePilotClimate(
@@ -129,6 +189,12 @@ async def _async_setup_config(
                 sensor_entity_id,
                 additional_modes,
                 unique_id,
+                value_off=value_off,
+                value_frost=value_frost,
+                value_eco=value_eco,
+                value_comfort_2=value_comfort_2,
+                value_comfort_1=value_comfort_1,
+                value_comfort=value_comfort,
             )
         ]
     )
@@ -149,6 +215,13 @@ class QubinoWirePilotClimate(ClimateEntity, RestoreEntity):
         sensor_entity_id: str | None,
         additional_modes: bool,
         unique_id: str | None,
+        *,
+        value_off: int = DEFAULT_VALUE_OFF,
+        value_frost: int = DEFAULT_VALUE_FROST,
+        value_eco: int = DEFAULT_VALUE_ECO,
+        value_comfort_2: int = DEFAULT_VALUE_COMFORT_2,
+        value_comfort_1: int = DEFAULT_VALUE_COMFORT_1,
+        value_comfort: int = DEFAULT_VALUE_COMFORT,
     ) -> None:
         """Initialize the climate device."""
 
@@ -172,6 +245,14 @@ class QubinoWirePilotClimate(ClimateEntity, RestoreEntity):
         self.sensor_entity_id = sensor_entity_id
         self.additional_modes = additional_modes
         self._cur_temperature = None
+
+        # Store configurable percentage thresholds
+        self._value_off = value_off
+        self._value_frost = value_frost
+        self._value_eco = value_eco
+        self._value_comfort_2 = value_comfort_2
+        self._value_comfort_1 = value_comfort_1
+        self._value_comfort = value_comfort
 
         self._attr_has_entity_name = has_entity_name
         self._attr_unique_id = (
@@ -274,32 +355,32 @@ class QubinoWirePilotClimate(ClimateEntity, RestoreEntity):
 
         if value is None:
             return None
-        if value <= VALUE_OFF:
+        if value <= self._value_off:
             return PRESET_NONE
-        if value <= VALUE_FROST:
+        if value <= self._value_frost:
             return PRESET_AWAY
-        if value <= VALUE_ECO:
+        if value <= self._value_eco:
             return PRESET_ECO
-        if value <= VALUE_COMFORT_2 and self.additional_modes:
+        if value <= self._value_comfort_2 and self.additional_modes:
             return PRESET_COMFORT_2
-        if value <= VALUE_COMFORT_1 and self.additional_modes:
+        if value <= self._value_comfort_1 and self.additional_modes:
             return PRESET_COMFORT_1
         return PRESET_COMFORT
 
     async def async_set_preset_mode(self, preset_mode: str) -> None:
         """Set preset mode."""
-        value = VALUE_OFF
+        value = self._value_off
 
         if preset_mode == PRESET_AWAY:
-            value = VALUE_FROST
+            value = self._value_frost
         elif preset_mode == PRESET_ECO:
-            value = VALUE_ECO
+            value = self._value_eco
         elif preset_mode == PRESET_COMFORT_2 and self.additional_modes:
-            value = VALUE_COMFORT_2
+            value = self._value_comfort_2
         elif preset_mode == PRESET_COMFORT_1 and self.additional_modes:
-            value = VALUE_COMFORT_1
+            value = self._value_comfort_1
         elif preset_mode == PRESET_COMFORT:
-            value = VALUE_COMFORT
+            value = self._value_comfort
 
         await self._async_set_heater_value(value)
 
@@ -311,12 +392,12 @@ class QubinoWirePilotClimate(ClimateEntity, RestoreEntity):
 
     async def async_set_hvac_mode(self, hvac_mode: HVACMode) -> None:
         """Set new target hvac mode."""
-        value = VALUE_FROST
+        value = self._value_frost
 
         if hvac_mode == HVACMode.HEAT:
-            value = VALUE_COMFORT
+            value = self._value_comfort
         elif hvac_mode == HVACMode.OFF:
-            value = VALUE_OFF
+            value = self._value_off
 
         await self._async_set_heater_value(value)
 
@@ -327,7 +408,7 @@ class QubinoWirePilotClimate(ClimateEntity, RestoreEntity):
 
         if value is None:
             return None
-        if value <= VALUE_OFF:
+        if value <= self._value_off:
             return HVACMode.OFF
         return HVACMode.HEAT
 

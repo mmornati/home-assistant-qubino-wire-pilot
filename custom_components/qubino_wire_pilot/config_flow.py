@@ -16,7 +16,35 @@ from homeassistant.helpers.schema_config_entry_flow import (
     wrapped_entity_config_entry_title,
 )
 
-from .climate import CONF_ADDITIONAL_MODES, CONF_HEATER, CONF_SENSOR, DOMAIN
+from .climate import (
+    CONF_ADDITIONAL_MODES,
+    CONF_HEATER,
+    CONF_SENSOR,
+    CONF_VALUE_COMFORT,
+    CONF_VALUE_COMFORT_1,
+    CONF_VALUE_COMFORT_2,
+    CONF_VALUE_ECO,
+    CONF_VALUE_FROST,
+    CONF_VALUE_OFF,
+    DEFAULT_VALUE_COMFORT,
+    DEFAULT_VALUE_COMFORT_1,
+    DEFAULT_VALUE_COMFORT_2,
+    DEFAULT_VALUE_ECO,
+    DEFAULT_VALUE_FROST,
+    DEFAULT_VALUE_OFF,
+    DOMAIN,
+)
+
+# Number selector config for percentage values (0-100)
+PERCENTAGE_SELECTOR = selector.NumberSelector(
+    selector.NumberSelectorConfig(
+        min=0,
+        max=100,
+        step=1,
+        mode=selector.NumberSelectorMode.BOX,
+        unit_of_measurement="%",
+    )
+)
 
 OPTIONS_SCHEMA = {
     vol.Optional(CONF_SENSOR): selector.EntitySelector(
@@ -25,6 +53,25 @@ OPTIONS_SCHEMA = {
         )
     ),
     vol.Optional(CONF_ADDITIONAL_MODES): selector.BooleanSelector(),
+    # Custom percentage thresholds
+    vol.Optional(
+        CONF_VALUE_OFF, default=DEFAULT_VALUE_OFF
+    ): PERCENTAGE_SELECTOR,
+    vol.Optional(
+        CONF_VALUE_FROST, default=DEFAULT_VALUE_FROST
+    ): PERCENTAGE_SELECTOR,
+    vol.Optional(
+        CONF_VALUE_ECO, default=DEFAULT_VALUE_ECO
+    ): PERCENTAGE_SELECTOR,
+    vol.Optional(
+        CONF_VALUE_COMFORT_2, default=DEFAULT_VALUE_COMFORT_2
+    ): PERCENTAGE_SELECTOR,
+    vol.Optional(
+        CONF_VALUE_COMFORT_1, default=DEFAULT_VALUE_COMFORT_1
+    ): PERCENTAGE_SELECTOR,
+    vol.Optional(
+        CONF_VALUE_COMFORT, default=DEFAULT_VALUE_COMFORT
+    ): PERCENTAGE_SELECTOR,
 }
 
 CONFIG_SCHEMA = {

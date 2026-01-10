@@ -8,12 +8,24 @@
         "data": {
           "heater": "Lumière",
           "sensor": "Capteur de température",
-          "additional_modes": "Modes supplémentaires"
+          "additional_modes": "Modes supplémentaires",
+          "value_off": "Seuil Arrêt",
+          "value_frost": "Seuil Hors-gel",
+          "value_eco": "Seuil Éco",
+          "value_comfort_2": "Seuil Confort -2",
+          "value_comfort_1": "Seuil Confort -1",
+          "value_comfort": "Seuil Confort"
         },
         "data_description": {
-          "heater": "Entité lumière utilisée pour contrôler le chauffage .",
+          "heater": "Entité lumière utilisée pour contrôler le chauffage.",
           "sensor": "Capteur de température qui reflète la température actuelle.",
-          "additional_modes": "Activer les modes supplémentaires (Confort -1\u00b0C et Confort -2\u00b0C)."
+          "additional_modes": "Activer les modes supplémentaires (Confort -1°C et Confort -2°C).",
+          "value_off": "Pourcentage de luminosité pour le mode Arrêt (défaut: 10%).",
+          "value_frost": "Pourcentage de luminosité pour le mode Hors-gel (défaut: 20%).",
+          "value_eco": "Pourcentage de luminosité pour le mode Éco (défaut: 25%).",
+          "value_comfort_2": "Pourcentage de luminosité pour le mode Confort -2 (défaut: 40%).",
+          "value_comfort_1": "Pourcentage de luminosité pour le mode Confort -1 (défaut: 50%).",
+          "value_comfort": "Pourcentage de luminosité pour le mode Confort (défaut: 99%)."
         }
       }
     }
@@ -24,12 +36,24 @@
         "data": {
           "heater": "Lumière",
           "sensor": "Capteur de température",
-          "additional_modes": "Modes supplémentaires"
+          "additional_modes": "Modes supplémentaires",
+          "value_off": "Seuil Arrêt",
+          "value_frost": "Seuil Hors-gel",
+          "value_eco": "Seuil Éco",
+          "value_comfort_2": "Seuil Confort -2",
+          "value_comfort_1": "Seuil Confort -1",
+          "value_comfort": "Seuil Confort"
         },
         "data_description": {
-          "heater": "Entité lumière utilisée pour contrôler le chauffage .",
+          "heater": "Entité lumière utilisée pour contrôler le chauffage.",
           "sensor": "Capteur de température qui reflète la température actuelle.",
-          "additional_modes": "Activer les modes supplémentaires (Confort -1\u00b0C et Confort -2\u00b0C)."
+          "additional_modes": "Activer les modes supplémentaires (Confort -1°C et Confort -2°C).",
+          "value_off": "Pourcentage de luminosité pour le mode Arrêt (défaut: 10%).",
+          "value_frost": "Pourcentage de luminosité pour le mode Hors-gel (défaut: 20%).",
+          "value_eco": "Pourcentage de luminosité pour le mode Éco (défaut: 25%).",
+          "value_comfort_2": "Pourcentage de luminosité pour le mode Confort -2 (défaut: 40%).",
+          "value_comfort_1": "Pourcentage de luminosité pour le mode Confort -1 (défaut: 50%).",
+          "value_comfort": "Pourcentage de luminosité pour le mode Confort (défaut: 99%)."
         }
       }
     }
@@ -47,8 +71,8 @@
         "state_attributes": {
           "preset_mode": {
             "state": {
-              "comfort-1": "Confort -1 \u00b0C",
-              "comfort-2": "Confort -2 \u00b0C"
+              "comfort-1": "Confort -1 °C",
+              "comfort-2": "Confort -2 °C"
             }
           }
         }
