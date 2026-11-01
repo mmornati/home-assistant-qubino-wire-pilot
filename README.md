@@ -33,13 +33,37 @@ The climate will have 2 modes:
   - `comfort-2` - mapped qubino "Comfort -2" mode (optional)
   - `eco` - mapped qubino "Eco" mode
   - `away` - mapped qubino "Frost protection" mode
-- `off` - mapped qubino "Off" mode
+- `off` - mapped qubino "Off" mode (reported as the `none` preset)
+
+Turning `heat` back on resumes the last order that was active (restored after a restart), or `comfort` if there is none.
+
+Reading the module back, each configured value is the upper bound of its order, except eco: with the defaults, 21-30% reads as eco, as in the Qubino manual, even though eco is sent as 25%.
+
+The thermostat also reports `hvac_action`: `off`, `idle` in frost protection, and `heating` otherwise. With a power sensor configured, `heating` and `idle` follow the radiator's power draw instead (above 5 W means heating).
+
+The thermostat is unavailable while the light is unavailable. If the light, the temperature sensor or the power sensor does not exist (for example after renaming it), a warning is logged and a repair issue appears in Settings > System > Repairs. The issue is cleared once the entity exists again. Renaming the light from its settings is followed automatically.
 
 :warning: "Comfort -1" and "Comfort -2" are not available by default because Home Assistant doesn't have comfort-1 and comfort-2 preset. If you want to support these modes, add `additional_modes: true` in your configuration.
 
 ## Installation
 
-You can convert the `light` to a `climate` entity by searching "Qubino Wire Pilot" in the integration page or helper page.
+This is a fork of [piitaya/home-assistant-qubino-wire-pilot](https://github.com/piitaya/home-assistant-qubino-wire-pilot) and is not in the default HACS catalog. Add it as a custom repository:
+
+1. HACS > ⋮ (top right) > Custom repositories.
+2. Repository `https://github.com/mmornati/home-assistant-qubino-wire-pilot`, type Integration, Add.
+3. Open "Qubino Wire Pilot" from this repository, Download, then restart Home Assistant.
+
+Then convert the `light` to a `climate` entity by searching "Qubino Wire Pilot" in the integration page or helper page.
+
+### Migrating from upstream 3.x
+
+The fork keeps the same domain (`qubino_wire_pilot`), so existing thermostats, entity ids and automations keep working.
+
+1. In HACS, open the upstream "Qubino Wire Pilot" (piitaya) and remove it. If HACS deletes the `custom_components/qubino_wire_pilot` folder, the next step puts it back.
+2. Add this repository as a custom repository and download it (see above).
+3. Restart Home Assistant. Existing entries keep their settings, and the threshold options become available in the helper's options.
+
+Keep only one of the two repositories installed in HACS: if both are tracked, an update of one overwrites the other. An entry configured with this fork's threshold options does not load on upstream 3.x ("not a valid option at 'value_comfort'"), so do not switch back without removing those options.
 
 ## Configuration
 
@@ -49,6 +73,7 @@ When adding the integration through the UI, you can configure:
 
 - **Light**: The light entity used to control the heating
 - **Temperature sensor**: Optional sensor to display current temperature
+- **Power sensor**: Optional power sensor of the radiator, used for `hvac_action`
 - **Additional modes**: Enable Comfort -1 and Comfort -2 presets
 - **Custom thresholds**: Override the default brightness percentages for each mode
 
@@ -61,6 +86,7 @@ If you prefer to use `yaml`, you can, but it's not recommended as more and more 
 | `platform`         | string  | yes      | -       | Platform name (`qubino_wire_pilot`)                                        |
 | `heater`           | string  | yes      | -       | Light entity                                                               |
 | `sensor`           | string  | no       | -       | Temperature sensor (for display)                                           |
+| `power_sensor`     | string  | no       | -       | Power sensor of the radiator (for `hvac_action`)                           |
 | `additional_modes` | boolean | no       | false   | 6-order support (add Comfort -1 and Comfort -2 preset)                     |
 | `name`             | string  | no       | -       | Name to use in the frontend                                                |
 | `unique_id`        | string  | no       | -       | An ID that uniquely identifies this climate                                |
@@ -148,6 +174,8 @@ See [this blog post](https://blog.mornati.net/qubino-zmnhjd1-and-home-assistant-
 ## Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.
+
+Run `make install-dev`, then `make check lint test` before opening it.
 
 ## Credits
 
