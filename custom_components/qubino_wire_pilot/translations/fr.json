@@ -4,10 +4,11 @@
     "step": {
       "user": {
         "title": "Ajouter un thermostat Qubino fil pilote",
-        "description": "Créer un entité thermostat à partir d'une entité lumière Qubino.",
+        "description": "Créer une entité thermostat qui pilote un module Qubino fil pilote via son entité lumière.",
         "data": {
           "heater": "Lumière",
           "sensor": "Capteur de température",
+          "power_sensor": "Capteur de puissance",
           "additional_modes": "Modes supplémentaires",
           "value_off": "Seuil Arrêt",
           "value_frost": "Seuil Hors-gel",
@@ -17,15 +18,16 @@
           "value_comfort": "Seuil Confort"
         },
         "data_description": {
-          "heater": "Entité lumière utilisée pour contrôler le chauffage.",
-          "sensor": "Capteur de température qui reflète la température actuelle.",
-          "additional_modes": "Activer les modes supplémentaires (Confort -1°C et Confort -2°C).",
-          "value_off": "Pourcentage de luminosité pour le mode Arrêt (défaut: 10%).",
-          "value_frost": "Pourcentage de luminosité pour le mode Hors-gel (défaut: 20%).",
-          "value_eco": "Pourcentage de luminosité pour le mode Éco (défaut: 25%).",
-          "value_comfort_2": "Pourcentage de luminosité pour le mode Confort -2 (défaut: 40%).",
-          "value_comfort_1": "Pourcentage de luminosité pour le mode Confort -1 (défaut: 50%).",
-          "value_comfort": "Pourcentage de luminosité pour le mode Confort (défaut: 99%)."
+          "heater": "Entité lumière du module Qubino qui pilote le radiateur.",
+          "sensor": "Capteur de température qui reflète la température actuelle de la pièce.",
+          "power_sensor": "Capteur de puissance du radiateur (facultatif). S'il est défini, le thermostat n'indique « chauffe » que lorsque le radiateur consomme.",
+          "additional_modes": "Activer les modes supplémentaires (Confort -1 °C et Confort -2 °C).",
+          "value_off": "Pourcentage de luminosité pour le mode Arrêt (défaut : 10 %).",
+          "value_frost": "Pourcentage de luminosité pour le mode Hors-gel (défaut : 20 %).",
+          "value_eco": "Pourcentage de luminosité pour le mode Éco (défaut : 25 %).",
+          "value_comfort_2": "Pourcentage de luminosité pour le mode Confort -2 (défaut : 40 %).",
+          "value_comfort_1": "Pourcentage de luminosité pour le mode Confort -1 (défaut : 50 %).",
+          "value_comfort": "Pourcentage de luminosité pour le mode Confort (défaut : 99 %)."
         }
       }
     }
@@ -34,8 +36,8 @@
     "step": {
       "init": {
         "data": {
-          "heater": "Lumière",
           "sensor": "Capteur de température",
+          "power_sensor": "Capteur de puissance",
           "additional_modes": "Modes supplémentaires",
           "value_off": "Seuil Arrêt",
           "value_frost": "Seuil Hors-gel",
@@ -45,15 +47,15 @@
           "value_comfort": "Seuil Confort"
         },
         "data_description": {
-          "heater": "Entité lumière utilisée pour contrôler le chauffage.",
-          "sensor": "Capteur de température qui reflète la température actuelle.",
-          "additional_modes": "Activer les modes supplémentaires (Confort -1°C et Confort -2°C).",
-          "value_off": "Pourcentage de luminosité pour le mode Arrêt (défaut: 10%).",
-          "value_frost": "Pourcentage de luminosité pour le mode Hors-gel (défaut: 20%).",
-          "value_eco": "Pourcentage de luminosité pour le mode Éco (défaut: 25%).",
-          "value_comfort_2": "Pourcentage de luminosité pour le mode Confort -2 (défaut: 40%).",
-          "value_comfort_1": "Pourcentage de luminosité pour le mode Confort -1 (défaut: 50%).",
-          "value_comfort": "Pourcentage de luminosité pour le mode Confort (défaut: 99%)."
+          "sensor": "Capteur de température qui reflète la température actuelle de la pièce.",
+          "power_sensor": "Capteur de puissance du radiateur (facultatif). S'il est défini, le thermostat n'indique « chauffe » que lorsque le radiateur consomme.",
+          "additional_modes": "Activer les modes supplémentaires (Confort -1 °C et Confort -2 °C).",
+          "value_off": "Pourcentage de luminosité pour le mode Arrêt (défaut : 10 %).",
+          "value_frost": "Pourcentage de luminosité pour le mode Hors-gel (défaut : 20 %).",
+          "value_eco": "Pourcentage de luminosité pour le mode Éco (défaut : 25 %).",
+          "value_comfort_2": "Pourcentage de luminosité pour le mode Confort -2 (défaut : 40 %).",
+          "value_comfort_1": "Pourcentage de luminosité pour le mode Confort -1 (défaut : 50 %).",
+          "value_comfort": "Pourcentage de luminosité pour le mode Confort (défaut : 99 %)."
         }
       }
     }
@@ -61,7 +63,7 @@
   "services": {
     "reload": {
       "name": "Recharger",
-      "description": "Recharge la configuration YAML de l'intégration Qubino fil pilote."
+      "description": "Recharge les thermostats Qubino fil pilote de la configuration YAML."
     }
   },
   "entity": {
@@ -72,11 +74,34 @@
           "preset_mode": {
             "state": {
               "comfort-1": "Confort -1 °C",
-              "comfort-2": "Confort -2 °C"
+              "comfort-2": "Confort -2 °C",
+              "none": "Arrêt"
             }
           }
         }
       }
+    }
+  },
+  "exceptions": {
+    "invalid_preset": {
+      "message": "Le préréglage {preset} n'est pas disponible. Préréglages disponibles : {presets}."
+    },
+    "invalid_hvac_mode": {
+      "message": "Le mode CVC {hvac_mode} n'est pas pris en charge."
+    }
+  },
+  "issues": {
+    "missing_heater": {
+      "title": "Radiateur du thermostat Qubino introuvable",
+      "description": "{thermostat} pilote {entity_id}, qui n'existe pas. Le thermostat reste indisponible tant qu'aucune lumière existante n'est choisie dans les options de l'entrée."
+    },
+    "missing_sensor": {
+      "title": "Capteur de température du thermostat Qubino introuvable",
+      "description": "{thermostat} lit sa température sur {entity_id}, qui n'existe pas. Choisissez un capteur existant dans les options de l'entrée."
+    },
+    "missing_power_sensor": {
+      "title": "Capteur de puissance du thermostat Qubino introuvable",
+      "description": "{thermostat} lit sa puissance sur {entity_id}, qui n'existe pas. Choisissez un capteur existant dans les options de l'entrée, ou retirez-le."
     }
   }
 }

@@ -1,4 +1,4 @@
-.PHONY: help clean lint format check zip install-dev validate
+.PHONY: help clean lint format check test zip install-dev validate
 
 # Default target
 help:
@@ -9,9 +9,10 @@ help:
 	@echo "Targets:"
 	@echo "  help        Show this help message"
 	@echo "  clean       Remove build artifacts and cache files"
-	@echo "  lint        Run pylint on the custom component"
-	@echo "  format      Format code with black"
-	@echo "  check       Check code formatting with black (no changes)"
+	@echo "  lint        Lint the component and tests with ruff"
+	@echo "  format      Format code with ruff"
+	@echo "  check       Check code formatting with ruff (no changes)"
+	@echo "  test        Run the tests"
 	@echo "  validate    Validate JSON files (translations, manifest)"
 	@echo "  zip         Create production-ready zip for Home Assistant"
 	@echo "  install-dev Install development dependencies"
@@ -25,7 +26,7 @@ DIST_DIR := dist
 # Development dependencies
 install-dev:
 	@echo "Installing development dependencies..."
-	pip install black pylint homeassistant voluptuous
+	pip install ruff -r requirements_test.txt
 
 # Clean build artifacts
 clean:
@@ -39,20 +40,25 @@ clean:
 	find . -type f -name ".DS_Store" -delete 2>/dev/null || true
 	@echo "Clean complete!"
 
-# Lint with pylint
+# Lint with ruff
 lint:
-	@echo "Running pylint..."
-	pylint $(COMPONENT_DIR) --disable=R,C || true
+	@echo "Running ruff..."
+	ruff check custom_components tests
 
-# Format code with black
+# Format code with ruff
 format:
-	@echo "Formatting code with black..."
-	black $(COMPONENT_DIR)
+	@echo "Formatting code with ruff..."
+	ruff format custom_components tests
 
 # Check formatting without making changes
 check:
 	@echo "Checking code formatting..."
-	black --check --diff $(COMPONENT_DIR)
+	ruff format --check custom_components tests
+
+# Run the tests
+test:
+	@echo "Running tests..."
+	python3 -m pytest
 
 # Validate JSON files
 validate:
