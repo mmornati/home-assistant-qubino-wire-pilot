@@ -4,10 +4,11 @@
     "step": {
       "user": {
         "title": "Add Qubino wire pilot thermostat",
-        "description": "Create a climate entity that controls the temperature via a switch and sensor.",
+        "description": "Create a climate entity that drives a Qubino pilot wire module through its light entity.",
         "data": {
           "heater": "Light",
           "sensor": "Temperature sensor",
+          "power_sensor": "Power sensor",
           "additional_modes": "Additional modes",
           "value_off": "Off threshold",
           "value_frost": "Frost protection threshold",
@@ -17,8 +18,9 @@
           "value_comfort": "Comfort threshold"
         },
         "data_description": {
-          "heater": "Light entity used to control the heating.",
-          "sensor": "Temperature sensor that reflect the current temperature.",
+          "heater": "Light entity of the Qubino module that drives the radiator.",
+          "sensor": "Temperature sensor that reflects the current room temperature.",
+          "power_sensor": "Optional power sensor of the radiator. When set, the thermostat reports heating only while the radiator draws power.",
           "additional_modes": "Enable additional modes (Comfort -1 °C and Comfort -2 °C).",
           "value_off": "Brightness percentage for Off mode (default: 10%).",
           "value_frost": "Brightness percentage for Frost Protection mode (default: 20%).",
@@ -34,8 +36,8 @@
     "step": {
       "init": {
         "data": {
-          "heater": "Light",
           "sensor": "Temperature sensor",
+          "power_sensor": "Power sensor",
           "additional_modes": "Additional modes",
           "value_off": "Off threshold",
           "value_frost": "Frost protection threshold",
@@ -45,9 +47,9 @@
           "value_comfort": "Comfort threshold"
         },
         "data_description": {
-          "heater": "Light entity used to control the heating.",
-          "sensor": "Temperature sensor that reflect the current temperature.",
-          "additional_modes": "Enable additional modes (Comfort -1°C and Comfort -2°C).",
+          "sensor": "Temperature sensor that reflects the current room temperature.",
+          "power_sensor": "Optional power sensor of the radiator. When set, the thermostat reports heating only while the radiator draws power.",
+          "additional_modes": "Enable additional modes (Comfort -1 °C and Comfort -2 °C).",
           "value_off": "Brightness percentage for Off mode (default: 10%).",
           "value_frost": "Brightness percentage for Frost Protection mode (default: 20%).",
           "value_eco": "Brightness percentage for Eco mode (default: 25%).",
@@ -61,7 +63,7 @@
   "services": {
     "reload": {
       "name": "Reload",
-      "description": "Reloads qubino wire pilot thermostats from the YAML-configuration."
+      "description": "Reloads Qubino wire pilot thermostats from the YAML configuration."
     }
   },
   "entity": {
@@ -72,11 +74,34 @@
           "preset_mode": {
             "state": {
               "comfort-1": "Comfort -1 °C",
-              "comfort-2": "Comfort -2 °C"
+              "comfort-2": "Comfort -2 °C",
+              "none": "Off"
             }
           }
         }
       }
+    }
+  },
+  "exceptions": {
+    "invalid_preset": {
+      "message": "Preset {preset} is not available. Available presets: {presets}."
+    },
+    "invalid_hvac_mode": {
+      "message": "HVAC mode {hvac_mode} is not supported."
+    }
+  },
+  "issues": {
+    "missing_heater": {
+      "title": "Qubino thermostat heater not found",
+      "description": "{thermostat} controls {entity_id}, which does not exist. The thermostat stays unavailable until you select an existing light in the helper options."
+    },
+    "missing_sensor": {
+      "title": "Qubino thermostat temperature sensor not found",
+      "description": "{thermostat} reads its temperature from {entity_id}, which does not exist. Select an existing sensor in the helper options."
+    },
+    "missing_power_sensor": {
+      "title": "Qubino thermostat power sensor not found",
+      "description": "{thermostat} reads its power from {entity_id}, which does not exist. Select an existing sensor in the helper options, or clear it."
     }
   }
 }

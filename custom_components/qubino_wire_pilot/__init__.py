@@ -1,10 +1,11 @@
 """Qubino wire pilot component."""
 
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.device import async_entity_id_to_device_id
 from homeassistant.helpers.helper_integration import async_handle_source_entity_changes
+
+from .const import CONF_HEATER, PLATFORMS
 
 try:
     from homeassistant.helpers.helper_integration import async_remove_helper_devices
@@ -17,10 +18,6 @@ except ImportError:
     )
 
     HAS_SINGLE_CONFIG_ENTRY_DEVICE = False
-
-CONF_HEATER = "heater"
-DOMAIN = "qubino_wire_pilot"
-PLATFORMS = [Platform.CLIMATE]
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:

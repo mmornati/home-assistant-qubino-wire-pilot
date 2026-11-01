@@ -5,8 +5,6 @@ from __future__ import annotations
 from collections.abc import Mapping
 from typing import Any
 
-import voluptuous as vol
-
 from homeassistant.components.light import DOMAIN as LIGHT_DOMAIN
 from homeassistant.components.sensor import DOMAIN as SENSOR_DOMAIN, SensorDeviceClass
 from homeassistant.helpers import entity_registry as er, selector
@@ -15,10 +13,12 @@ from homeassistant.helpers.schema_config_entry_flow import (
     SchemaFlowFormStep,
     wrapped_entity_config_entry_title,
 )
+import voluptuous as vol
 
-from .climate import (
+from .const import (
     CONF_ADDITIONAL_MODES,
     CONF_HEATER,
+    CONF_POWER_SENSOR,
     CONF_SENSOR,
     CONF_VALUE_COMFORT,
     CONF_VALUE_COMFORT_1,
@@ -52,17 +52,16 @@ OPTIONS_SCHEMA = {
             domain=SENSOR_DOMAIN, device_class=SensorDeviceClass.TEMPERATURE
         )
     ),
+    vol.Optional(CONF_POWER_SENSOR): selector.EntitySelector(
+        selector.EntitySelectorConfig(
+            domain=SENSOR_DOMAIN, device_class=SensorDeviceClass.POWER
+        )
+    ),
     vol.Optional(CONF_ADDITIONAL_MODES): selector.BooleanSelector(),
     # Custom percentage thresholds
-    vol.Optional(
-        CONF_VALUE_OFF, default=DEFAULT_VALUE_OFF
-    ): PERCENTAGE_SELECTOR,
-    vol.Optional(
-        CONF_VALUE_FROST, default=DEFAULT_VALUE_FROST
-    ): PERCENTAGE_SELECTOR,
-    vol.Optional(
-        CONF_VALUE_ECO, default=DEFAULT_VALUE_ECO
-    ): PERCENTAGE_SELECTOR,
+    vol.Optional(CONF_VALUE_OFF, default=DEFAULT_VALUE_OFF): PERCENTAGE_SELECTOR,
+    vol.Optional(CONF_VALUE_FROST, default=DEFAULT_VALUE_FROST): PERCENTAGE_SELECTOR,
+    vol.Optional(CONF_VALUE_ECO, default=DEFAULT_VALUE_ECO): PERCENTAGE_SELECTOR,
     vol.Optional(
         CONF_VALUE_COMFORT_2, default=DEFAULT_VALUE_COMFORT_2
     ): PERCENTAGE_SELECTOR,

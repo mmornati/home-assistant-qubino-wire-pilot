@@ -1,19 +1,12 @@
 {
   "domain": "qubino_wire_pilot",
   "name": "Qubino wire pilot",
+  "codeowners": ["@mmornati"],
   "config_flow": true,
+  "dependencies": ["sensor", "light"],
   "documentation": "https://github.com/mmornati/home-assistant-qubino-wire-pilot",
-  "issue_tracker": "https://github.com/mmornati/home-assistant-qubino-wire-pilot/issues",
   "integration_type": "helper",
-  "iot_class": "local_polling",
-  "dependencies": [
-    "sensor",
-    "light"
-  ],
-  "version": "4.0.0",
-  "codeowners": [
-    "@piitaya",
-    "@dx44",
-    "@mmornati"
-  ]
+  "iot_class": "calculated",
+  "issue_tracker": "https://github.com/mmornati/home-assistant-qubino-wire-pilot/issues",
+  "version": "4.1.0"
 }
