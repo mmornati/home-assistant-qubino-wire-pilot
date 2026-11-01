@@ -3,7 +3,7 @@ name: Validate
 'on':
   push:
     branches:
-      - main
+      - master
   pull_request:
 
 permissions:
@@ -34,27 +34,8 @@ jobs:
           ignore: brands
           category: integration
 
-  style:
-    name: Check Code Style
-    runs-on: "ubuntu-latest"
-    steps:
-      - name: Checkout
-        uses: "actions/checkout@v4"
-
-      - name: Setup Python
-        uses: "actions/setup-python@v5"
-        with:
-          python-version: "3.12"
-          cache: 'pip'
-
-      - name: Install Black
-        run: python3 -m pip install black
-
-      - name: Check formatting with Black
-        run: black --check --diff custom_components/
-
   lint:
-    name: Lint with Pylint
+    name: Lint with Ruff
     runs-on: "ubuntu-latest"
     steps:
       - name: Checkout
@@ -63,14 +44,33 @@ jobs:
       - name: Setup Python
         uses: "actions/setup-python@v5"
         with:
-          python-version: "3.12"
+          python-version: "3.14"
+
+      - name: Install Ruff
+        run: python3 -m pip install ruff
+
+      - name: Check formatting
+        run: ruff format --check custom_components tests
+
+      - name: Lint
+        run: ruff check custom_components tests
+
+  tests:
+    name: Tests
+    runs-on: "ubuntu-latest"
+    steps:
+      - name: Checkout
+        uses: "actions/checkout@v4"
+
+      - name: Setup Python
+        uses: "actions/setup-python@v5"
+        with:
+          python-version: "3.14"
           cache: 'pip'
+          cache-dependency-path: requirements_test.txt
 
       - name: Install dependencies
-        run: |
-          python3 -m pip install --upgrade pip
-          python3 -m pip install pylint homeassistant voluptuous
+        run: python3 -m pip install -r requirements_test.txt
 
-      - name: Run Pylint
-        run: pylint custom_components/qubino_wire_pilot --disable=R,C
-        continue-on-error: true
+      - name: Run tests
+        run: python3 -m pytest
